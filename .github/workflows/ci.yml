@@ -1,0 +1,29 @@
+# Автотесты: математика прибыли/убытка и статические проверки мода.
+# DLL мода здесь не собирается — для неё нужны проприетарные DLL игры,
+# их нельзя класть в публичный репозиторий. Сборка остаётся локальной (build.cmd).
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: '8.0.x'
+
+      # Код возврата = число проваленных проверок, так что падение теста роняет job
+      - name: Profit/loss tests
+        run: dotnet run --project Tests -c Release
+
+      # ModInfo.json, переводы, ключи из кода, размер обложки
+      - name: Mod static checks
+        run: python3 .github/scripts/check_mod.py

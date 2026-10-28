@@ -2,6 +2,8 @@
 
 **English** | [Русский](README.ru.md)
 
+[![CI](https://github.com/Gesugao-san/stardeus-stock-day-summary/actions/workflows/ci.yml/badge.svg)](https://github.com/Gesugao-san/stardeus-stock-day-summary/actions/workflows/ci.yml)
+
 A [Stardeus](https://store.steampowered.com/app/1380910/Stardeus/) v0.14 mod: at the end of every
 stock market day it shows how much your portfolio gained or lost, and can pause the game.
 
@@ -75,6 +77,10 @@ Tests for the profit/loss math run without the game:
 ```cmd
 dotnet run --project Tests
 ```
+
+On every push, GitHub Actions runs these tests and `.github/scripts/check_mod.py`: strict `ModInfo.json`,
+matching keys and `{0}` placeholders in all translations, every key used in code translated, cover size.
+The mod DLL itself is built locally only, since it needs the game's own DLLs.
 
 ### Layout
 

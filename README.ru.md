@@ -2,6 +2,8 @@
 
 [English](README.md) | **Русский**
 
+[![CI](https://github.com/Gesugao-san/stardeus-stock-day-summary/actions/workflows/ci.yml/badge.svg)](https://github.com/Gesugao-san/stardeus-stock-day-summary/actions/workflows/ci.yml)
+
 Мод для [Stardeus](https://store.steampowered.com/app/1380910/Stardeus/) v0.14: в конце каждого
 биржевого дня показывает, сколько портфель заработал или потерял, и может поставить игру на паузу.
 
@@ -75,6 +77,10 @@ DLL появится в `Libraries\StockDaySummary.dll`.
 ```cmd
 dotnet run --project Tests
 ```
+
+При каждом пуше GitHub Actions запускает эти тесты и `.github/scripts/check_mod.py`: строгий `ModInfo.json`,
+одинаковые ключи и плейсхолдеры `{0}` во всех переводах, перевод каждого ключа из кода, размер обложки.
+Сама DLL мода собирается только локально: для неё нужны DLL игры.
 
 ### Структура
 
