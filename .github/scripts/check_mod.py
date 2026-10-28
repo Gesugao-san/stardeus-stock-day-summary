@@ -8,6 +8,7 @@ Checks:
   * Every translation key used in Code/ exists in English.csv
     (including the "<key>.tip" tooltips added by SettingsPanel.AddToggle).
   * ModCover.jpg exists and is 800x450, as the Workshop upload requires.
+  * Every *.csproj is well-formed XML (e.g. no "--" inside comments).
 
 Usage: python3 .github/scripts/check_mod.py [mod_root]
 Exit code: number of failed checks (0 = all good).
@@ -17,6 +18,7 @@ import json
 import re
 import struct
 import sys
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 KEY_PREFIX = "stockdaysummary."
@@ -172,12 +174,25 @@ def check_cover(root):
     ok("ModCover.jpg is 800x450")
 
 
+def check_projects(root):
+    """MSBuild refuses malformed project files before compiling anything."""
+    projects = sorted(p for p in root.rglob("*.csproj") if "obj" not in p.parts)
+    for path in projects:
+        try:
+            ET.parse(path)
+        except ET.ParseError as e:
+            fail(f"{path.relative_to(root)} is not valid XML: {e}")
+            return
+    ok(f"{len(projects)} project file(s) are valid XML")
+
+
 def main():
     root = Path(sys.argv[1] if len(sys.argv) > 1 else ".").resolve()
     check_modinfo(root)
     english = check_translations(root)
     check_code_keys(root, english)
     check_cover(root)
+    check_projects(root)
     print(f"\n{len(errors)} problem(s)" if errors else "\nALL CHECKS PASSED")
     return len(errors)
 

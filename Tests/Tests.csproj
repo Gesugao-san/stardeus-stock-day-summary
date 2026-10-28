@@ -1,5 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <!-- Profit/loss math tests; run with: dotnet run --project Tests
+  <!-- Profit/loss math tests. Run from the repository root: "dotnet run" with the Tests project (see README).
        Uses only Code/Core, so no game assemblies are needed. -->
   <PropertyGroup>
     <OutputType>Exe</OutputType>

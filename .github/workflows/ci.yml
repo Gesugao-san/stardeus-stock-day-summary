@@ -16,14 +16,18 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
+      # Первыми — быстрые проверки с понятными сообщениями:
+      # ModInfo.json, переводы, ключи из кода, размер обложки, XML проектов
+      - name: Mod static checks
+        run: python3 .github/scripts/check_mod.py
+
       - uses: actions/setup-dotnet@v5
+        if: ${{ !cancelled() }}
         with:
           dotnet-version: '8.0.x'
 
+      # Запускаются, даже если проверки выше упали, чтобы в одном прогоне видеть всё.
       # Код возврата = число проваленных проверок, так что падение теста роняет job
       - name: Profit/loss tests
+        if: ${{ !cancelled() }}
         run: dotnet run --project Tests -c Release
-
-      # ModInfo.json, переводы, ключи из кода, размер обложки
-      - name: Mod static checks
-        run: python3 .github/scripts/check_mod.py
