@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Profit/loss math tests; run with: dotnet run --project Tests
+       Uses only Code/Core, so no game assemblies are needed. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../Code/Core/DayPnlCalculator.cs" />
+  </ItemGroup>
+</Project>

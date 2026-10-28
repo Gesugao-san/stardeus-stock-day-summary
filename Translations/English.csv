@@ -1,0 +1,22 @@
+Key,Translation,Version,Comment (context for translators)
+stockdaysummary.settings.title,Stock Day Summary,,Settings menu button and page title
+stockdaysummary.menu.modsettings,Mod Settings,,Main menu button; same text as Modding Overhauled's
+stockdaysummary.settings.pause,Pause on stock day summary,,
+stockdaysummary.settings.pause.tip,Pause the game when the stock market day ends and the summary appears.,,
+stockdaysummary.settings.open.details,Open details window immediately,,
+stockdaysummary.settings.open.details.tip,"Show the summary window right away. If off, click the event icon to open it.",,
+stockdaysummary.settings.show.empty,Report days without stocks,,
+stockdaysummary.settings.show.empty.tip,Show the summary even when no stocks were held or traded that day.,,
+stockdaysummary.settings.autosave,Autosave before the day closes,,
+stockdaysummary.settings.autosave.tip,"Run the game's autosave 10 game minutes before the stock market day closes, so the save still has the old prices.",,
+stockdaysummary.event.title,Stock market day: {0} ({1}),,{0} money with sign; {1} percent
+stockdaysummary.details.header,Stock market day closed,,
+stockdaysummary.details.period,Chart: day {0} → day {1},,Day numbers as in the price chart tooltip
+stockdaysummary.details.result,Day result: {0} ({1}),,
+stockdaysummary.details.value,Portfolio value: {0},,
+stockdaysummary.details.realized,Realized by sales: {0},,Sell price minus purchase price
+stockdaysummary.details.unrealized,Unrealized profit: {0},,Current price minus purchase price of held stocks
+stockdaysummary.details.assets,By asset:,,
+stockdaysummary.details.no.assets,No stocks held or traded.,,
+stockdaysummary.details.more,...and {0} more,,
+stockdaysummary.details.sold,(sold {0}),,{0} number of shares

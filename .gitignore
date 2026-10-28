@@ -1,0 +1,9 @@
+# Build output: the DLL is shipped through releases and the Workshop, not git
+Libraries/
+.vscode/obj/
+.vscode/bin/
+bin/
+obj/
+
+# Created by the game on first Workshop upload; keep it local
+SteamWorkshopItemId
