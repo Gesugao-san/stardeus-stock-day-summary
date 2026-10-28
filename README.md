@@ -1,5 +1,7 @@
 # Stock Day Summary
 
+**English** | [Русский](README.ru.md)
+
 A [Stardeus](https://store.steampowered.com/app/1380910/Stardeus/) v0.14 mod: at the end of every
 stock market day it shows how much your portfolio gained or lost, and can pause the game.
 
@@ -81,6 +83,7 @@ dotnet run --project Tests
 | `Code/Core/DayPnlCalculator.cs` | Pure profit/loss math, no game types |
 | `Code/StockDaySummarySys.cs` | Game system: listens to the market day change, builds the summary |
 | `Code/SummaryPresenter.cs` | Event, log line, details dialog, pause |
+| `Code/PreCloseAutosave.cs` | Autosave before the day closes |
 | `Code/Market/` | Price history lookups, sale tracking (Harmony patch on `MarketPortfolio.Sell`) |
 | `Code/Settings/` | Options, settings page, *Mod Settings* integration |
 | `Translations/` | English and Russian texts |
@@ -88,16 +91,6 @@ dotnet run --project Tests
 
 Before uploading to the Workshop, the game rejects mods that contain dot files or folders
 (`.git`, `.gitignore`, `.vscode`), so upload from a clean copy of the mod folder.
-
-## Сводка биржи (RU)
-
-В конце каждого биржевого дня мод показывает, сколько портфель заработал или потерял, и может
-поставить игру на паузу. Событие «Биржа за день: +$3.12K (+4.64%)» появляется в списке «События»,
-по клику открываются подробности: итог дня, стоимость портфеля, зафиксированная и нереализованная
-прибыль, разбивка по активам.
-
-Настройки: главное меню → Настройки модов (Mod Settings) → Сводка биржи. Если установлен
-Modding Overhauled, пункт появится в его меню, иначе мод добавит свою кнопку.
 
 ## License
 
