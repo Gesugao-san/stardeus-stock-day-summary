@@ -52,7 +52,7 @@ button at the same place. Options are stored in the game's global `Settings.txt`
 
 ## Install
 
-- **Steam Workshop:** subscribe and enable the mod in Main Menu → Mods.
+- **[Steam Workshop](https://steamcommunity.com/sharedfiles/filedetails/?id=3829155679):** subscribe and enable the mod in Main Menu → Mods.
 - **Manually:** put the mod folder into
   `%USERPROFILE%\AppData\LocalLow\Kodo Linija\Stardeus\Mods\StockDaySummary`
   (needs `ModInfo.json`, `ModCover.jpg`, `Libraries\StockDaySummary.dll`, `Translations\`),

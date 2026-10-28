@@ -52,7 +52,7 @@
 
 ## Установка
 
-- **Мастерская Steam:** подписаться и включить мод в главном меню → «Моды».
+- **[Мастерская Steam](https://steamcommunity.com/sharedfiles/filedetails/?id=3829155679):** подписаться и включить мод в главном меню → «Моды».
 - **Вручную:** положить папку мода в
   `%USERPROFILE%\AppData\LocalLow\Kodo Linija\Stardeus\Mods\StockDaySummary`
   (нужны `ModInfo.json`, `ModCover.jpg`, `Libraries\StockDaySummary.dll`, `Translations\`)
