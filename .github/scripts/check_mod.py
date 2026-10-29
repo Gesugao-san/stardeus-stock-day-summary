@@ -6,7 +6,9 @@ Checks:
   * Every translation CSV has 4 columns, unique keys, the same keys as
     English.csv and the same {n} placeholders per key.
   * Every translation key used in Code/ exists in English.csv
-    (including the "<key>.tip" tooltips added by SettingsPanel.AddToggle).
+    (including the "<key>.tip" tooltips added by the settings toggles).
+  * Each game version folder (Code/V0xx) defines the classes the shared
+    code calls (GameBootstrap, GameCompat, SummaryEvent).
   * ModCover.jpg exists and is 800x450, as the Workshop upload requires.
   * Every *.csproj is well-formed XML (e.g. no "--" inside comments).
 
@@ -29,8 +31,10 @@ PLACEHOLDER = re.compile(r"\{(\d+)\}")
 LITERAL_T = re.compile(r'"(stockdaysummary\.[a-z0-9.]+)"\.T\(')
 # const string Name = "key";  ...  Name.T(...)
 CONST_KEY = re.compile(r'const string (\w+) = "(stockdaysummary\.[a-z0-9.]+)";')
-# AddToggle("key", ...) translates "key" and "key.tip"
-TOGGLE_KEY = re.compile(r'AddToggle\(\s*"([^"]+)"')
+# AddToggle("key", ...) (v0.14) or Toggle(idx++, "key", ...) (v0.15) translate "key" and "key.tip"
+TOGGLE_KEY = re.compile(r'\b(?:Add)?Toggle\(\s*(?:\w+\+\+,\s*)?"(stockdaysummary\.[a-z0-9.]+)"')
+# Classes each Code/V0xx folder must define: the shared code calls them
+VERSION_CLASSES = ("GameBootstrap", "GameCompat", "SummaryEvent")
 
 errors = []
 
@@ -174,6 +178,21 @@ def check_cover(root):
     ok("ModCover.jpg is 800x450")
 
 
+def check_version_folders(root):
+    """Every Code/V0xx folder must provide the classes the shared code calls."""
+    folders = sorted(p for p in (root / "Code").glob("V0*") if p.is_dir())
+    if not folders:
+        fail("no Code/V0xx game version folders found")
+        return
+    for folder in folders:
+        text = "\n".join(p.read_text(encoding="utf-8") for p in folder.rglob("*.cs"))
+        missing = [c for c in VERSION_CLASSES if not re.search(rf"\bclass {c}\b", text)]
+        if missing:
+            fail(f"{folder.relative_to(root)} misses {', '.join(missing)}")
+            continue
+        ok(f"{folder.relative_to(root)} defines {', '.join(VERSION_CLASSES)}")
+
+
 def check_projects(root):
     """MSBuild refuses malformed project files before compiling anything."""
     projects = sorted(p for p in root.rglob("*.csproj") if "obj" not in p.parts)
@@ -191,6 +210,7 @@ def main():
     check_modinfo(root)
     english = check_translations(root)
     check_code_keys(root, english)
+    check_version_folders(root)
     check_cover(root)
     check_projects(root)
     print(f"\n{len(errors)} problem(s)" if errors else "\nALL CHECKS PASSED")
