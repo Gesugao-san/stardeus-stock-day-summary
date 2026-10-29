@@ -66,16 +66,22 @@ namespace StockDaySummary {
       subscribedClock.OnTick.AddListener(OnTick);
     }
 
+    /// <summary>
+    /// True for a game the player is playing. False while a save is still loading
+    /// (market catch-up must not produce reports) and for the v0.15 main menu
+    /// background, which is a running demo save that can't be saved or paused.
+    /// </summary>
+    private bool IsPlayerGame => S.IsLoaded && !GameCompat.IsDemoMode;
+
     /// <summary>Per-tick work: autosave shortly before the market day closes.</summary>
     private void OnTick(long ticks) {
-      if (!S.IsLoaded) { return; }
+      if (!IsPlayerGame) { return; }
       autosave.OnTick(S);
     }
 
     /// <summary>Handles the end of a market day.</summary>
     private void OnMarketDayChanged() {
-      // Market catch-up while a save is loading must not produce a report.
-      if (!S.IsLoaded) { return; }
+      if (!IsPlayerGame) { return; }
       // One report per tick, even if the signal fires repeatedly.
       long now = S.Clock.Ticks;
       if (now == lastSummaryTick) { return; }

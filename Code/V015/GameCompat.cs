@@ -1,5 +1,6 @@
 // Stock Day Summary — v0.15 versions of game calls whose signature changed.
 
+using Game.Constants;
 using Game.Data.Economy;
 
 namespace StockDaySummary {
@@ -7,5 +8,8 @@ namespace StockDaySummary {
   internal static class GameCompat {
     /// <summary>Unsigned money amount in the game's own format ("$227.21K").</summary>
     public static string Money(double value) => Wallet.ToValueString(value, true, true);
+
+    /// <summary>True while the main menu background (a running demo save) is shown.</summary>
+    public static bool IsDemoMode => G.IsDemoMode;
   }
 }
