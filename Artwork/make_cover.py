@@ -4,15 +4,29 @@
 Drawn at 2x and downscaled for smooth edges. Original artwork only:
 space backdrop, a chart "icon" tile with a pause badge, title and a
 mock of the in-game summary line.
+
+Needs Pillow and the Inter font (Bold, ExtraBold, SemiBold, Medium):
+  py -m pip install pillow        (python3 -m pip install pillow elsewhere)
+  Inter: https://rsms.me/inter/ - install it, or unzip it into Artwork/fonts/
+
+Usage: py make_cover.py [out_path]   (default: ModCover.jpg in the mod root)
 """
+import os
 import random
 import sys
+from pathlib import Path
 
-from PIL import Image, ImageDraw, ImageFilter, ImageFont
+try:
+    from PIL import Image, ImageDraw, ImageFilter, ImageFont
+except ImportError:
+    sys.exit("Pillow is missing: run  py -m pip install pillow  (or python3 -m pip install pillow)")
 
 SCALE = 2
 W, H = 800 * SCALE, 450 * SCALE
-FONT_DIR = "/usr/share/fonts/opentype/inter/"
+ARTWORK_DIR = Path(__file__).resolve().parent
+DEFAULT_OUT = ARTWORK_DIR.parent / "ModCover.jpg"
+FONT_EXTENSIONS = (".otf", ".ttf")
+_font_paths = {}
 
 BG_TOP = (14, 10, 36)
 BG_BOTTOM = (40, 28, 92)
@@ -26,8 +40,40 @@ WHITE = (240, 238, 255)
 MUTED = (175, 168, 220)
 
 
-def font(name, size):
-    return ImageFont.truetype(FONT_DIR + name, size * SCALE)
+def font_dirs():
+    """Folders searched for Inter, most specific first: unzipped next to the script,
+    INTER_FONT_DIR, then the fonts installed on Windows, Linux or macOS."""
+    home = Path.home()
+    candidates = [
+        ARTWORK_DIR / "fonts",
+        os.environ.get("INTER_FONT_DIR"),
+        Path(os.environ.get("LOCALAPPDATA", home)) / "Microsoft" / "Windows" / "Fonts",
+        Path(os.environ.get("WINDIR", "C:/Windows")) / "Fonts",
+        home / ".local" / "share" / "fonts",
+        "/usr/share/fonts",
+        "/usr/local/share/fonts",
+        home / "Library" / "Fonts",
+        "/Library/Fonts",
+    ]
+    return [Path(c) for c in candidates if c and Path(c).is_dir()]
+
+
+def find_font(stem):
+    """Path of e.g. "Inter-Bold" as .otf or .ttf, searched recursively."""
+    if stem in _font_paths:
+        return _font_paths[stem]
+    wanted = {(stem + ext).lower() for ext in FONT_EXTENSIONS}
+    for folder in font_dirs():
+        for path in folder.rglob("*"):
+            if path.name.lower() in wanted:
+                _font_paths[stem] = path
+                return path
+    sys.exit(f"Font {stem} not found. Install Inter (https://rsms.me/inter/) "
+             f"or unzip it into {ARTWORK_DIR / 'fonts'}")
+
+
+def font(stem, size):
+    return ImageFont.truetype(str(find_font(stem)), size * SCALE)
 
 
 def s(v):
@@ -124,25 +170,25 @@ def draw_tile(img):
     d.rounded_rectangle([bx + gap, by - bh / 2, bx + gap + bw, by + bh / 2], s(3), fill=(40, 24, 10))
 
     # day label
-    d.text((x0 + s(36), y0 + s(26)), "DAY CLOSE", font=font("Inter-Bold.otf", 22), fill=MUTED)
+    d.text((x0 + s(36), y0 + s(26)), "DAY CLOSE", font=font("Inter-Bold", 22), fill=MUTED)
 
 
 def draw_text(img):
     d = ImageDraw.Draw(img)
     x = s(392)
-    d.text((x, s(92)), "STOCK DAY", font=font("Inter-ExtraBold.otf", 54), fill=WHITE)
-    d.text((x, s(150)), "SUMMARY", font=font("Inter-ExtraBold.otf", 54), fill=WHITE)
+    d.text((x, s(92)), "STOCK DAY", font=font("Inter-ExtraBold", 54), fill=WHITE)
+    d.text((x, s(150)), "SUMMARY", font=font("Inter-ExtraBold", 54), fill=WHITE)
 
     # mock of the in-game summary line
     card = [x, s(238), s(760), s(318)]
     d.rounded_rectangle(card, s(14), fill=(24, 18, 62), outline=(150, 70, 220), width=s(3))
-    f = font("Inter-SemiBold.otf", 21)
+    f = font("Inter-SemiBold", 21)
     d.text((x + s(20), s(252)), "Stock market day:", font=f, fill=WHITE)
-    d.text((x + s(20), s(282)), "+$3.12K", font=font("Inter-Bold.otf", 21), fill=GREEN)
+    d.text((x + s(20), s(282)), "+$3.12K", font=font("Inter-Bold", 21), fill=GREEN)
     d.text((x + s(112), s(282)), "(+4.64%)", font=f, fill=WHITE)
 
-    d.text((x, s(342)), "Daily P/L  ·  auto-pause  ·  per asset", font=font("Inter-Medium.otf", 20), fill=MUTED)
-    d.text((x, s(392)), "for Stardeus v0.15 & v0.14", font=font("Inter-Medium.otf", 16), fill=(130, 122, 190))
+    d.text((x, s(342)), "Daily P/L  ·  auto-pause  ·  per asset", font=font("Inter-Medium", 20), fill=MUTED)
+    d.text((x, s(392)), "for Stardeus v0.15 & v0.14", font=font("Inter-Medium", 16), fill=(130, 122, 190))
 
 
 def main(out_path):
@@ -154,4 +200,4 @@ def main(out_path):
 
 
 if __name__ == "__main__":
-    main(sys.argv[1])
+    main(sys.argv[1] if len(sys.argv) > 1 else DEFAULT_OUT)

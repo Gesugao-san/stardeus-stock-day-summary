@@ -12,3 +12,7 @@ obj/
 
 # Created by the game on first Workshop upload; keep it local
 SteamWorkshopItemId
+
+# Inter unzipped for Artwork/make_cover.py; the font is not ours to ship
+Artwork/fonts/
+__pycache__/
