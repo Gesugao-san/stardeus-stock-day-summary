@@ -22,6 +22,8 @@ DLL_NAME = "StockDaySummary.dll"
 # Files and folders a player needs; DLLs are added per game version
 RUNTIME_FILES = ("ModInfo.json", "ModCover.jpg", "LICENSE")
 RUNTIME_FOLDERS = ("Translations",)
+# Trailing game version label of the mod name, e.g. " [v0.15 | v0.14]"
+GAME_VERSIONS_SUFFIX = re.compile(r"\s*\[[^\]]*\]\s*$")
 
 
 def changelog_section(root, version):
@@ -79,7 +81,8 @@ def main():
     set_outputs({
         "version": version,
         "tag": f"v{version}",
-        "title": f"{info['Name']} {version}",
+        # The Workshop title lists game versions; the release title names the mod version
+        "title": f"{GAME_VERSIONS_SUFFIX.sub('', info['Name'])} {version}",
         "zip": archive,
         "notes": notes,
     })
