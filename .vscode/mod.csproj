@@ -19,6 +19,8 @@
     <IntermediateOutputPath>obj/$(GameTarget)/</IntermediateOutputPath>
     <Deterministic>true</Deterministic>
     <DebugType>embedded</DebugType>
+    <!-- The built DLL is kept in git: store source paths relative to the mod, not C:/Users/<name>/... -->
+    <PathMap>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)/..'))=StockDaySummary/</PathMap>
     <DebugSymbols>false</DebugSymbols>
     <GenerateDependencyFile>false</GenerateDependencyFile>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>

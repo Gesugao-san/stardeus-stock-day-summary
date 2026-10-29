@@ -78,7 +78,8 @@ build.cmd 0.14                     :: v0.14 (switch Stardeus to the v0_14_x bran
 build.cmd 0.15 "D:\Games\Stardeus"  :: if the game is not in the default Steam folder
 ```
 
-The DLL is written to `0.15\Libraries\` or `0.14\Libraries\`.
+The DLL is written to `0.15\Libraries\` or `0.14\Libraries\`. Commit it together with the code
+change: CI can't build it, so releases ship the DLLs from the repository.
 
 Tests for the profit/loss math run without the game:
 
@@ -88,8 +89,19 @@ dotnet run --project Tests
 
 On every push, GitHub Actions runs these tests and `.github/scripts/check_mod.py`: strict `ModInfo.json`,
 matching keys and `{0}` placeholders in all translations, every key used in code translated, every
-game version folder complete, cover size.
+game version folder complete, cover size, and each committed DLL built for its game version with
+the `ModInfo.json` version.
 The mod DLL itself is built locally only, since it needs the game's own DLLs.
+
+### Release
+
+1. Raise `ModVersion` in `ModInfo.json` and the version in `Code/Shared/AssemblyInfo.cs`.
+2. Add a `## <version>` section to [CHANGELOG.md](CHANGELOG.md): it becomes the release notes.
+3. Rebuild both DLLs (`build.cmd 0.15`, `build.cmd 0.14`) and commit them.
+4. Actions → **Release** → *Run workflow*, or push the tag `v<version>`.
+
+The workflow runs the checks and tests, packs `StockDaySummary-<version>.zip` (a mod folder ready to
+unpack into `Mods`) and creates a draft release; publish it on the Releases page.
 
 ### Layout
 
@@ -104,6 +116,8 @@ The mod DLL itself is built locally only, since it needs the game's own DLLs.
 | `Code/V015/` | v0.15 UI: notification, settings tab, `[SelfInit]` registration |
 | `Code/V014/` | v0.14 UI: Events list entry, *Mod Settings* page and menu integration |
 | `Translations/` | English and Russian texts |
+| `0.15/`, `0.14/` | Built DLLs, one per game version |
+| `CHANGELOG.md` | Changes per version; release notes come from here |
 | `Artwork/make_cover.py` | Renders `ModCover.jpg` |
 
 Before uploading to the Workshop, the game rejects mods that contain dot files or folders
