@@ -69,11 +69,13 @@ jobs:
             exit 1
           fi
 
-          # Существующий тег на другом коммите дал бы релиз со старым кодом и новым архивом
-          TAG_SHA=$(gh api "repos/$GITHUB_REPOSITORY/commits/$TAG" --jq .sha 2>/dev/null || true)
-          if [ -n "$TAG_SHA" ] && [ "$TAG_SHA" != "$GITHUB_SHA" ]; then
-            echo "::error::Tag $TAG points to $TAG_SHA, not to $GITHUB_SHA"
-            exit 1
+          # Существующий тег на другом коммите дал бы релиз со старым кодом и новым архивом.
+          # Код возврата проверяется через if: при ошибке gh api печатает тело ответа в stdout
+          if TAG_SHA=$(gh api "repos/$GITHUB_REPOSITORY/commits/$TAG" --jq .sha 2>/dev/null); then
+            if [ "$TAG_SHA" != "$GITHUB_SHA" ]; then
+              echo "::error::Tag $TAG points to $TAG_SHA, not to $GITHUB_SHA"
+              exit 1
+            fi
           fi
 
           ARGS=(--target "$GITHUB_SHA" --title "$TITLE" --notes-file "$NOTES")
