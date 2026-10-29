@@ -142,7 +142,7 @@ def draw_text(img):
     d.text((x + s(112), s(282)), "(+4.64%)", font=f, fill=WHITE)
 
     d.text((x, s(342)), "Daily P/L  ·  auto-pause  ·  per asset", font=font("Inter-Medium.otf", 20), fill=MUTED)
-    d.text((x, s(392)), "for Stardeus v0.14", font=font("Inter-Medium.otf", 16), fill=(130, 122, 190))
+    d.text((x, s(392)), "for Stardeus v0.15 & v0.14", font=font("Inter-Medium.otf", 16), fill=(130, 122, 190))
 
 
 def main(out_path):

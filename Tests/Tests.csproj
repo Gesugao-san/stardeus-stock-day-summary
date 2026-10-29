@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <!-- Profit/loss math tests; run with: dotnet run --project Tests
-       Uses only Code/Core, so no game assemblies are needed. -->
+  <!-- Profit/loss math tests. Run from the repository root: "dotnet run" with the Tests project (see README).
+       Uses only Code/Shared/Core, so no game assemblies are needed. -->
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
@@ -8,6 +8,6 @@
     <ImplicitUsings>disable</ImplicitUsings>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="../Code/Core/DayPnlCalculator.cs" />
+    <Compile Include="../Code/Shared/Core/DayPnlCalculator.cs" />
   </ItemGroup>
 </Project>

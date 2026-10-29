@@ -1,5 +1,10 @@
-# Build output: the DLL is shipped through releases and the Workshop, not git
-Libraries/
+# Build output. Only the built mod DLL of each game version is kept in git:
+# CI can't build it (that needs the game's own DLLs), so releases ship these.
+/Libraries/
+/0.1*/*
+!/0.1*/Libraries/
+/0.1*/Libraries/*
+!/0.1*/Libraries/StockDaySummary.dll
 .vscode/obj/
 .vscode/bin/
 bin/

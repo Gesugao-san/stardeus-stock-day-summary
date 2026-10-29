@@ -1,7 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <!-- Stock Day Summary: builds Libraries/StockDaySummary.dll against the installed game.
-       Override the game path: dotnet build .vscode/mod.csproj -p:StardeusDir="D:/Games/Stardeus" -->
+  <!-- Stock Day Summary: builds <GameTarget>/Libraries/StockDaySummary.dll against the installed game.
+       GameTarget is 0.15 (default) or 0.14; the game loads <its version>/Libraries first.
+       Example: dotnet build .vscode/mod.csproj -p:GameTarget=0.14 -p:StardeusDir="D:/Games/Stardeus" -->
   <PropertyGroup>
+    <GameTarget Condition="'$(GameTarget)' == ''">0.15</GameTarget>
+    <GameCodeDir>V$(GameTarget.Replace('.', ''))</GameCodeDir>
+    <StardeusDir Condition="'$(StardeusDir)' == ''">C:/Program Files (x86)/Steam/steamapps/common/Stardeus</StardeusDir>
+
     <LangVersion>9.0</LangVersion>
     <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
@@ -10,8 +15,12 @@
     <PlatformTarget>x64</PlatformTarget>
     <RootNamespace>StockDaySummary</RootNamespace>
     <AssemblyName>StockDaySummary</AssemblyName>
-    <OutputPath>../Libraries</OutputPath>
+    <OutputPath>../$(GameTarget)/Libraries</OutputPath>
+    <IntermediateOutputPath>obj/$(GameTarget)/</IntermediateOutputPath>
+    <Deterministic>true</Deterministic>
     <DebugType>embedded</DebugType>
+    <!-- The built DLL is kept in git: store source paths relative to the mod, not C:/Users/<name>/... -->
+    <PathMap>$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)/..'))=StockDaySummary/</PathMap>
     <DebugSymbols>false</DebugSymbols>
     <GenerateDependencyFile>false</GenerateDependencyFile>
     <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
@@ -22,10 +31,11 @@
     <AddAdditionalExplicitAssemblyReferences>false</AddAdditionalExplicitAssemblyReferences>
     <ImplicitlyExpandNETStandardFacades>false</ImplicitlyExpandNETStandardFacades>
     <ImplicitlyExpandDesignTimeFacades>false</ImplicitlyExpandDesignTimeFacades>
-    <StardeusDir Condition="'$(StardeusDir)' == ''">C:/Program Files (x86)/Steam/steamapps/common/Stardeus</StardeusDir>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="../Code/**/*.cs" />
+    <Compile Include="../Code/Shared/**/*.cs" />
+    <Compile Include="../Code/$(GameCodeDir)/**/*.cs" />
     <Reference Include="$(StardeusDir)/Stardeus_Data/Managed/*.dll">
       <Private>False</Private>
     </Reference>

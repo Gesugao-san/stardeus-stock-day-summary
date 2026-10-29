@@ -6,8 +6,15 @@ Checks:
   * Every translation CSV has 4 columns, unique keys, the same keys as
     English.csv and the same {n} placeholders per key.
   * Every translation key used in Code/ exists in English.csv
-    (including the "<key>.tip" tooltips added by SettingsPanel.AddToggle).
+    (including the "<key>.tip" tooltips added by the settings toggles).
+  * Each game version folder (Code/V0xx) defines the classes the shared
+    code calls (GameBootstrap, GameCompat, SummaryEvent).
   * ModCover.jpg exists and is 800x450, as the Workshop upload requires.
+  * Every *.csproj is well-formed XML (e.g. no "--" inside comments).
+  * Code/Shared/AssemblyInfo.cs has the same version as ModInfo.json.
+  * Each game version has its built DLL (<x.yy>/Libraries/StockDaySummary.dll),
+    built for that version (its GameBootstrap.TargetGame) and with the
+    ModInfo.json version, so a release can't ship a DLL from older code.
 
 Usage: python3 .github/scripts/check_mod.py [mod_root]
 Exit code: number of failed checks (0 = all good).
@@ -17,6 +24,7 @@ import json
 import re
 import struct
 import sys
+import xml.etree.ElementTree as ET
 from pathlib import Path
 
 KEY_PREFIX = "stockdaysummary."
@@ -27,8 +35,15 @@ PLACEHOLDER = re.compile(r"\{(\d+)\}")
 LITERAL_T = re.compile(r'"(stockdaysummary\.[a-z0-9.]+)"\.T\(')
 # const string Name = "key";  ...  Name.T(...)
 CONST_KEY = re.compile(r'const string (\w+) = "(stockdaysummary\.[a-z0-9.]+)";')
-# AddToggle("key", ...) translates "key" and "key.tip"
-TOGGLE_KEY = re.compile(r'AddToggle\(\s*"([^"]+)"')
+# AddToggle("key", ...) (v0.14) or Toggle(idx++, "key", ...) (v0.15) translate "key" and "key.tip"
+TOGGLE_KEY = re.compile(r'\b(?:Add)?Toggle\(\s*(?:\w+\+\+,\s*)?"(stockdaysummary\.[a-z0-9.]+)"')
+# Classes each Code/V0xx folder must define: the shared code calls them
+VERSION_CLASSES = ("GameBootstrap", "GameCompat", "SummaryEvent")
+# [assembly: AssemblyInformationalVersion("0.4.0")]
+ASSEMBLY_VERSION = re.compile(r'AssemblyInformationalVersion\("([^"]+)"\)')
+# public const string TargetGame = "v0.15";
+TARGET_GAME = re.compile(r'TargetGame\s*=\s*"([^"]+)"')
+DLL_NAME = "StockDaySummary.dll"
 
 errors = []
 
@@ -172,12 +187,106 @@ def check_cover(root):
     ok("ModCover.jpg is 800x450")
 
 
+def check_version_folders(root):
+    """Every Code/V0xx folder must provide the classes the shared code calls."""
+    folders = sorted(p for p in (root / "Code").glob("V0*") if p.is_dir())
+    if not folders:
+        fail("no Code/V0xx game version folders found")
+        return
+    for folder in folders:
+        text = "\n".join(p.read_text(encoding="utf-8") for p in folder.rglob("*.cs"))
+        missing = [c for c in VERSION_CLASSES if not re.search(rf"\bclass {c}\b", text)]
+        if missing:
+            fail(f"{folder.relative_to(root)} misses {', '.join(missing)}")
+            continue
+        ok(f"{folder.relative_to(root)} defines {', '.join(VERSION_CLASSES)}")
+
+
+def check_projects(root):
+    """MSBuild refuses malformed project files before compiling anything."""
+    projects = sorted(p for p in root.rglob("*.csproj") if "obj" not in p.parts)
+    for path in projects:
+        try:
+            ET.parse(path)
+        except ET.ParseError as e:
+            fail(f"{path.relative_to(root)} is not valid XML: {e}")
+            return
+    ok(f"{len(projects)} project file(s) are valid XML")
+
+
+def mod_version(root):
+    """ModVersion from ModInfo.json, or None when it can't be read."""
+    try:
+        return json.loads((root / "ModInfo.json").read_text(encoding="utf-8"))["ModVersion"]
+    except (OSError, ValueError, KeyError):
+        return None  # check_modinfo already reported it
+
+
+def check_assembly_info(root, version):
+    """AssemblyInfo.cs is the version the DLLs get; it must follow ModInfo.json."""
+    path = root / "Code" / "Shared" / "AssemblyInfo.cs"
+    found = ASSEMBLY_VERSION.search(path.read_text(encoding="utf-8")) if path.exists() else None
+    if not found:
+        fail("Code/Shared/AssemblyInfo.cs has no AssemblyInformationalVersion")
+        return
+    if found.group(1) != version:
+        fail(f"AssemblyInfo.cs version {found.group(1)} != ModInfo.json ModVersion {version}")
+        return
+    ok(f"AssemblyInfo.cs version {version}")
+
+
+def game_targets(root):
+    """{"0.15": "v0.15", ...}: DLL folder of each Code/V0xx and its TargetGame text."""
+    targets = {}
+    for folder in sorted(p for p in (root / "Code").glob("V0*") if p.is_dir()):
+        digits = folder.name[1:]                      # V015 -> 015
+        bootstrap = folder / "GameBootstrap.cs"
+        found = TARGET_GAME.search(bootstrap.read_text(encoding="utf-8")) if bootstrap.exists() else None
+        if found:
+            targets[f"{digits[0]}.{digits[1:]}"] = found.group(1)  # 015 -> 0.15
+    return targets
+
+
+def version_blob(version):
+    """Custom attribute blob of AssemblyInformationalVersion(version) as stored in a DLL:
+    prolog 01 00, length-prefixed UTF-8 string, no named arguments (00 00)."""
+    text = version.encode("utf-8")
+    return b"\x01\x00" + bytes([len(text)]) + text + b"\x00\x00"
+
+
+def check_dlls(root, version):
+    """Each game version needs its own DLL, built from code of this ModVersion."""
+    targets = game_targets(root)
+    for folder, target in targets.items():
+        path = root / folder / "Libraries" / DLL_NAME
+        name = path.relative_to(root).as_posix()
+        if not path.exists():
+            fail(f"{name} is missing: build it with build.cmd {folder}")
+            continue
+        data = path.read_bytes()
+        # ldstr literals live in the #US heap as UTF-16LE
+        others = [t for t in targets.values() if t != target and t.encode("utf-16-le") in data]
+        if target.encode("utf-16-le") not in data or others:
+            fail(f"{name} is not built for {target}: rebuild with build.cmd {folder}")
+            continue
+        if version_blob(version) not in data:
+            fail(f"{name} is not version {version}: rebuild with build.cmd {folder}")
+            continue
+        ok(f"{name}: {target}, version {version}")
+
+
 def main():
     root = Path(sys.argv[1] if len(sys.argv) > 1 else ".").resolve()
     check_modinfo(root)
     english = check_translations(root)
     check_code_keys(root, english)
+    check_version_folders(root)
     check_cover(root)
+    check_projects(root)
+    version = mod_version(root)
+    if version:
+        check_assembly_info(root, version)
+        check_dlls(root, version)
     print(f"\n{len(errors)} problem(s)" if errors else "\nALL CHECKS PASSED")
     return len(errors)
 

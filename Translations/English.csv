@@ -14,6 +14,7 @@ stockdaysummary.details.header,Stock market day closed,,
 stockdaysummary.details.period,Chart: day {0} → day {1},,Day numbers as in the price chart tooltip
 stockdaysummary.details.result,Day result: {0} ({1}),,
 stockdaysummary.details.value,Portfolio value: {0},,
+stockdaysummary.details.since.purchase,Since purchase:,,"Header of the realized/unrealized lines; counted from the purchase price, not from yesterday"
 stockdaysummary.details.realized,Realized by sales: {0},,Sell price minus purchase price
 stockdaysummary.details.unrealized,Unrealized profit: {0},,Current price minus purchase price of held stocks
 stockdaysummary.details.assets,By asset:,,
