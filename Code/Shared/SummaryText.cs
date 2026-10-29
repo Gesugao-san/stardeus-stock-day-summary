@@ -17,6 +17,8 @@ namespace StockDaySummary {
     private const int MaxAssetLines = 10;
     /// <summary>Amounts below this are shown as zero.</summary>
     private const double Epsilon = 0.005;
+    /// <summary>Prefix of lines nested under a sub-header.</summary>
+    private const string Indent = "  ";
 
     /// <summary>Short one-line result, e.g. "Stock market day: +$1.2K (+3.4%)".</summary>
     public static string Title(DaySummary summary) {
@@ -30,12 +32,24 @@ namespace StockDaySummary {
       sb.AppendLine("stockdaysummary.details.period".T(summary.FromDay, summary.ToDay));
       sb.AppendLine("stockdaysummary.details.result".T(Money(summary.Pnl), Percent(summary.Percent)));
       sb.AppendLine("stockdaysummary.details.value".T(GameCompat.Money(summary.PortfolioValue)));
-      if (summary.Assets.Any(a => a.SoldQty > 0)) {
-        sb.AppendLine("stockdaysummary.details.realized".T(Money(summary.Realized)));
-      }
-      sb.AppendLine("stockdaysummary.details.unrealized".T(Money(summary.Unrealized)));
+      AppendSincePurchase(sb, summary);
       AppendAssets(sb, summary);
       return sb.ToString().TrimEnd();
+    }
+
+    /// <summary>
+    /// Profit counted from the purchase price, under its own header: unlike the day
+    /// result it covers the whole time since purchase, so the two must not be summed.
+    /// </summary>
+    private static void AppendSincePurchase(StringBuilder sb, DaySummary summary) {
+      if (summary.IsEmpty) { return; }
+
+      sb.AppendLine();
+      sb.AppendLine("stockdaysummary.details.since.purchase".T());
+      if (summary.Assets.Any(a => a.SoldQty > 0)) {
+        sb.AppendLine(Indent + "stockdaysummary.details.realized".T(Money(summary.Realized)));
+      }
+      sb.AppendLine(Indent + "stockdaysummary.details.unrealized".T(Money(summary.Unrealized)));
     }
 
     /// <summary>Per-asset lines, best first, truncated to <see cref="MaxAssetLines"/>.</summary>
